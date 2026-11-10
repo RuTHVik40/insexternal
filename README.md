@@ -352,3 +352,63 @@ alert icmp any any -> any any (msg:"ICMP Packet Detected"; sid:1000001; rev:1;)
 ping 127.0.0.1
 ####snort running
 sudo snort -A console -q -c /etc/snort/snort.conf -i lo
+
+
+from Crypto.Cipher import DES
+from Crypto.Util.Padding import pad, unpad
+import os
+
+# Generate DES key (8 bytes)
+key = b'12345678'
+
+def encrypt_file(input_file, output_file):
+    cipher = DES.new(key, DES.MODE_ECB)
+
+    with open(input_file, 'rb') as f:
+        data = f.read()
+
+    encrypted = cipher.encrypt(pad(data, DES.block_size))
+
+    with open(output_file, 'wb') as f:
+        f.write(encrypted)
+
+    print(input_file, "Encrypted Successfully")
+
+
+def decrypt_file(input_file, output_file):
+    cipher = DES.new(key, DES.MODE_ECB)
+
+    with open(input_file, 'rb') as f:
+        data = f.read()
+
+    decrypted = unpad(
+        cipher.decrypt(data), DES.block_size
+    )
+
+    with open(output_file, 'wb') as f:
+        f.write(decrypted)
+
+    print(input_file, "Decrypted Successfully")
+
+
+# Create two files of different sizes
+with open("file1.txt", "w") as f:
+    f.write("Hello DES Encryption!")
+
+with open("file2.txt", "w") as f:
+    f.write("This is a larger file used for testing DES encryption and decryption. " * 10)
+
+# Encrypt both files
+encrypt_file("file1.txt", "file1.enc")
+encrypt_file("file2.txt", "file2.enc")
+
+# Decrypt both files
+decrypt_file("file1.enc", "file1_decrypted.txt")
+decrypt_file("file2.enc", "file2_decrypted.txt")
+
+# Verify original and decrypted files
+print("File 1 Match:", open("file1.txt", "rb").read() ==
+      open("file1_decrypted.txt", "rb").read())
+
+print("File 2 Match:", open("file2.txt", "rb").read() ==
+      open("file2_decrypted.txt", "rb").read())
